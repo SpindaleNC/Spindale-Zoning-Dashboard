@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spindale Zoning Dashboard</title>
+  <style>
+    :root { --brand:#0b7c97; --ink:#17313a; --line:#cbdde2; --bg:#edf5f7; }
+    * { box-sizing:border-box; }
+    html, body { height:100%; margin:0; }
+    body { font:14px/1.4 system-ui, -apple-system, Segoe UI, sans-serif; color:var(--ink); background:var(--bg); overflow:hidden; }
+    header { height:118px; display:flex; align-items:center; gap:24px; padding:10px 30px 10px 12px; background:#e6f2f5; border-bottom:4px solid var(--brand); box-shadow:none; }
+    .headerLogo { width:104px; height:auto; flex:0 0 auto; display:block; }
+    h1 { margin:0; font-size:24px; line-height:1.1; color:#006174; font-weight:800; letter-spacing:-.02em; }
+    main { height:calc(100% - 118px); display:grid; grid-template-columns:1fr minmax(460px, 48%); gap:8px; padding:8px; }
+    .pane { position:relative; min-width:0; overflow:hidden; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 4px 18px rgba(20,55,65,.10); }
+    iframe { width:100%; height:100%; border:0; background:white; }
+    .mobileNav { display:none; }
+    @media (max-width:850px) {
+      body { overflow:auto; }
+      header { height:auto; min-height:92px; flex-wrap:nowrap; padding:10px 14px; gap:14px; }
+      .headerLogo { width:82px; }
+      h1 { font-size:20px; }
+      main { height:auto; grid-template-columns:1fr; grid-template-rows:66vh 80vh; }
+    }
+    @media (max-width:700px) {
+      body { overflow:hidden; }
+      header { min-height:64px; height:64px; padding:8px 14px; gap:10px; }
+      .headerLogo { width:52px; height:52px; }
+      h1 { font-size:18px; line-height:1.08; }
+      .mobileNav { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:8px 10px; background:#fff; border-bottom:1px solid var(--line); }
+      .mobileNav button { appearance:none; min-height:42px; border:1px solid #b8cfd5; border-radius:10px; background:#fff; color:#075d71; font:700 14px/1.1 inherit; }
+      .mobileNav button[aria-selected="true"] { background:var(--brand); border-color:var(--brand); color:#fff; }
+      main { height:calc(100% - 118px); display:block; padding:0; }
+      .pane { display:none; width:100%; height:100%; border:0; border-radius:0; box-shadow:none; }
+      .pane.active { display:block; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img class="headerLogo" src="assets/spindale-logo.png" alt="Town of Spindale logo">
+    <h1>Spindale Zoning Dashboard</h1>
+  </header>
+  <nav class="mobileNav" aria-label="Dashboard sections">
+    <button id="mobileMapTab" type="button" aria-selected="true">Map</button>
+    <button id="mobileDashboardTab" type="button" aria-selected="false">Zoning Information</button>
+  </nav>
+  <main>
+    <section id="mapPane" class="pane active">
+      <iframe id="mapFrame" src="map-source/Spindale-Zoning-Map-main/index.html" title="Spindale parcel and zoning map"></iframe>
+    </section>
+    <section id="dashboardPane" class="pane">
+      <iframe id="dashboardFrame" src="dashboard.html" title="Spindale zoning dashboard"></iframe>
+    </section>
+  </main>
+  <script>
+    const dashboardFrame = document.getElementById('dashboardFrame');
+    const mapFrame = document.getElementById('mapFrame');
+    const mapPane = document.getElementById('mapPane');
+    const dashboardPane = document.getElementById('dashboardPane');
+    const mobileMapTab = document.getElementById('mobileMapTab');
+    const mobileDashboardTab = document.getElementById('mobileDashboardTab');
+    let latestDistrictMessage = null;
+
+    function showMobilePane(name) {
+      const mapActive = name === 'map';
+      mapPane.classList.toggle('active', mapActive);
+      dashboardPane.classList.toggle('active', !mapActive);
+      mobileMapTab.setAttribute('aria-selected', String(mapActive));
+      mobileDashboardTab.setAttribute('aria-selected', String(!mapActive));
+    }
+    mobileMapTab.addEventListener('click', () => showMobilePane('map'));
+    mobileDashboardTab.addEventListener('click', () => showMobilePane('dashboard'));
+
+    window.addEventListener('message', event => {
+      const message = event.data || {};
+
+      if (event.source === mapFrame.contentWindow) {
+        if (message.type === 'SPINDALE_MAP_READY' && latestDistrictMessage) {
+          mapFrame.contentWindow.postMessage(latestDistrictMessage, '*');
+        }
+        if (message.type === 'SPINDALE_PARCEL_SELECTED' || message.type === 'SPINDALE_PARCEL_CLEARED') {
+          dashboardFrame.contentWindow.postMessage(message, '*');
+        }
+      }
+
+      if (event.source === dashboardFrame.contentWindow) {
+        if (message.type === 'SPINDALE_DASHBOARD_DISTRICT') latestDistrictMessage = message;
+        if (message.type === 'SPINDALE_DASHBOARD_DISTRICT' || message.type === 'SPINDALE_CLEAR_PARCEL') {
+          mapFrame.contentWindow.postMessage(message, '*');
+        }
+      }
+    });
+  </script>
+</body>
+</html>
