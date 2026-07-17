@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Spindale Zoning Dashboard</title>
   <style>
     :root {
@@ -222,6 +222,29 @@
       .districtMatrix { grid-template-columns: repeat(4, minmax(80px,1fr)); }
       th, td { white-space:normal; }
       table { min-width:900px; }
+      input, select { font-size:16px !important; }
+      #usesCard .tableWrap {
+        max-height:45vh;
+        overflow-y:auto;
+        overflow-x:hidden;
+        touch-action:pan-y;
+        overscroll-behavior-x:none;
+        -webkit-overflow-scrolling:touch;
+      }
+      #usesCard table {
+        width:100%;
+        min-width:0;
+        table-layout:fixed;
+      }
+      #usesCard th:not(:first-child),
+      #usesCard td:not(:first-child) { display:none; }
+      #usesCard th:first-child,
+      #usesCard td:first-child {
+        width:100%;
+        min-width:0;
+        white-space:normal;
+        overflow-wrap:anywhere;
+      }
     }
     @media (max-width: 520px) {
       .btns { gap:8px; }
