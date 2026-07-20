@@ -152,6 +152,12 @@
             }
             .leaflet-control-attribution { font-size: 9px; }
         }
+        @media (max-width: 649px) {
+            /* Prevent the layer list's initial expanded state from flashing before setup collapses it. */
+            .leaflet-control-layers.leaflet-control-layers-expanded:not(.layers-control-ready) {
+                visibility: hidden !important;
+            }
+        }
         </style>
         <title></title>
     </head>
@@ -1650,6 +1656,7 @@
                 controlLayersElement.classList.remove('leaflet-control-layers-expanded');
                 isLayersListExpanded = false;
                 newLayersListHeight();
+                controlLayersElement.classList.add('layers-control-ready');
             } else {
                 // Preserve the existing desktop initialization and sizing behavior.
                 setTimeout(function() {
