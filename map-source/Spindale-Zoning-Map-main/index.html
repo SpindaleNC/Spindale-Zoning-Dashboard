@@ -1622,7 +1622,8 @@
                     layersListElement.style.height = newHeight + 'px';
                 }
             }
-            var isLayersListExpanded = true;
+            var isSmallScreen = window.innerWidth < 650;
+            var isLayersListExpanded = !isSmallScreen;
             var controlLayersElement = document.querySelector('.leaflet-control-layers');
             var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
             // toggle Collapsed/Expanded and apply new Layers List height
@@ -1644,22 +1645,21 @@
 					}
 				});
 			}
-            // Collapsed/Expanded at Start to apply new height
-            setTimeout(function() {
-                toggleLayerControl.click();
-            }, 10);
-            setTimeout(function() {
-                toggleLayerControl.click();
-            }, 10);
-            // Collapsed touch/small screen
-            var isSmallScreen = window.innerWidth < 650;
             if (isSmallScreen) {
+                // Start mobile maps collapsed so the layer list never flashes open.
+                controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                isLayersListExpanded = false;
+                newLayersListHeight();
+            } else {
+                // Preserve the existing desktop initialization and sizing behavior.
                 setTimeout(function() {
-                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
-                    isLayersListExpanded = !isLayersListExpanded;
-                }, 500);
-            }  
-        });       
+                    toggleLayerControl.click();
+                }, 10);
+                setTimeout(function() {
+                    toggleLayerControl.click();
+                }, 10);
+            }
+        });
         setBounds();
         setTimeout(resetMapToDefaultView, 150);
         // --- Road labels that sit along the road centerline ---
